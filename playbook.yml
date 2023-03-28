@@ -3,23 +3,26 @@
   hosts: localhost
   connection: local
   tasks:
-    - name: Pull git
-      ansible.builtin.git:
-        repo: http://podman:3000/student/eda-app.git
-        dest: eda-app
-
     - name: Create temporary build directory
       ansible.builtin.tempfile:
         state: directory
       register: r_tmp
 
-    - name: push -- Clone application repository 
+    - name: Clone application repository
       ansible.builtin.git:
-        repo: "{{ event.clone_url }}"
-        dest: "{{ r_tmp.path }}{{ event.repo_name }}"
+        repo: "{{ ansible_eda['event']['clone_url'] }}"
+        dest: "{{ r_tmp['path'] }}{{ ansible_eda['event']['repo_name'] }}"
       register: repo_cloned
 
+      # https://stackoverflow.com/questions/61426894/find-out-changed-line-numbers-from-git-diff
     - name: Diff
-      ansible.builtin.shell: git diff {{ pre_commit }} {{ post_commit }}
-...
+      ansible.builtin.shell: git diff --unified=0 --diff-filter=M HEAD~1 HEAD | grep -v -e '^[+-]' -e '^index' | sed 's/diff --git a.* b\//\//g; s/.*@@\(.*\)@@.*/\1/g; s/^ -//g; s/,[0-9]*//g; s/\(^[0-9]*\) +/\1-/g;'
+      args:
+        chdir: "{{ r_tmp['path'] }}{{ ansible_eda['event']['repo_name'] }}"
+      changed_when: false
+      register: r_diff
 
+    - name: Print diff
+      ansible.builtin.debug:
+        msg: "{{ r_diff }}"
+...
