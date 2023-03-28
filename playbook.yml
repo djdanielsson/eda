@@ -1,0 +1,25 @@
+---
+- name: Test
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Pull git
+      ansible.builtin.git:
+        repo: http://podman:3000/student/eda-app.git
+        dest: eda-app
+
+    - name: Create temporary build directory
+      ansible.builtin.tempfile:
+        state: directory
+      register: r_tmp
+
+    - name: push -- Clone application repository 
+      ansible.builtin.git:
+        repo: "{{ event.clone_url }}"
+        dest: "{{ r_tmp.path }}{{ event.repo_name }}"
+      register: repo_cloned
+
+    - name: Diff
+      ansible.builtin.shell: git diff {{ pre_commit }} {{ post_commit }}
+...
+

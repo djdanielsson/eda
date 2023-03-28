@@ -1,0 +1,36 @@
+---
+- name: Capture POSTs from gitea
+  hosts: all
+  sources:
+    - ansible.eda.webhook:
+        host: 0.0.0.0
+        port: 5000
+      filters:
+        - ansible.eda.dashes_to_underscores:
+
+  rules:
+    - name: Get push event details
+      condition: event.meta.headers.X_Gitea_Event == "push"
+      action:
+        post_event:
+          event:
+            type: "{{ event.meta.headers.X_Gitea_Event }}"
+            gitref: "{{ event.payload.ref }}"
+            repo_name: "{{ event.payload.repository.name }}"
+            author: "{{ event.payload.head_commit.author.username }}"
+            clone_url: "{{ event.payload.repository.clone_url }}"
+            pre_commit: "{{ event.payload.before }}"
+            post_commit: "{{ event.payload.after }}"
+
+    - name: Update repo
+      condition: event.payload is defined
+      action:
+        run_playbook:
+          name: playbook.yml
+    
+    # - name: test
+    #   condition: event.payload is defined
+    #   action:
+    #     debug:
+
+
