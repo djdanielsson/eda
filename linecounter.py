@@ -53,4 +53,4 @@ if __name__ == '__main__':
       loader = LineLoader(open(path).read())
       data = loader.get_single_data()
 
-      pprint(data)
+      print(data)
