@@ -13,8 +13,8 @@
           name: Demo Job Template
           organization: Default
 
-    # - name: Test
-    #   condition: event.payload is defined
-    #   action:
-    #     debug:
+    - name: Test
+      condition: event.payload is defined
+      action:
+        debug:
 ...
