@@ -7,7 +7,10 @@
         port: 5000
   rules:
     - name: Launch Demo Job
-      condition: event.payload.short_description is regex("\/var\/log", ignorecase=true)
+      condition:
+        all:
+          - event.payload.assignment_group == 'ce2ae2ae47b681dc723383c2846d43ba'
+          - event.payload.short_description is regex("\/var\/log", ignorecase=true)
       action:
         run_job_template:
           name: Demo Job Template
